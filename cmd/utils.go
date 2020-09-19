@@ -18,6 +18,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/storage/bolt"
 )
 
+// 检查错误
 func checkErr(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -81,6 +82,7 @@ func dbExists(path string) (bool, error) {
 	return false, err
 }
 
+// CMD CLI运行
 func python(fn pythonFunc, cfg pythonConfig) cobraFunc {
 	return func(cmd *cobra.Command, args []string) {
 		data := pythonData{hadDB: true}
@@ -96,6 +98,7 @@ func python(fn pythonFunc, cfg pythonConfig) cobraFunc {
 			log.Fatal(path + " does not exist. Please run 'filebrowser config init' first.")
 		}
 
+		// 创建键值数据库
 		data.hadDB = exists
 		db, err := storm.Open(path)
 		checkErr(err)

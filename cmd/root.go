@@ -34,6 +34,7 @@ var (
 )
 
 func init() {
+	// 初始化CMD CLI
 	cobra.OnInitialize(initConfig)
 
 	rootCmd.SetVersionTemplate("File Browser version {{printf \"%s\" .Version}}\n")
@@ -50,6 +51,7 @@ func init() {
 	addServerFlags(flags)
 }
 
+// 添加服务参数配置
 func addServerFlags(flags *pflag.FlagSet) {
 	flags.StringP("address", "a", "127.0.0.1", "address to listen on")
 	flags.StringP("log", "l", "stdout", "log output")
@@ -66,6 +68,7 @@ func addServerFlags(flags *pflag.FlagSet) {
 	flags.Bool("disable-preview-resize", false, "disable resize of image previews")
 }
 
+// 实例化CMD CLI
 var rootCmd = &cobra.Command{
 	Use:   "filebrowser",
 	Short: "A stylish web-based file browser",
@@ -112,6 +115,7 @@ user created with the credentials from options "username" and "password".`,
 		}
 
 		// build img service
+		// 配置图片服务
 		workersCount, err := cmd.Flags().GetInt("img-processors")
 		checkErr(err)
 		if workersCount < 1 {
@@ -119,6 +123,7 @@ user created with the credentials from options "username" and "password".`,
 		}
 		imgSvc := img.New(workersCount)
 
+		// 缓存配置
 		var fileCache diskcache.Interface = diskcache.NewNoOp()
 		cacheDir, err := cmd.Flags().GetString("cache-dir")
 		checkErr(err)
@@ -129,6 +134,7 @@ user created with the credentials from options "username" and "password".`,
 			fileCache = diskcache.New(afero.NewOsFs(), cacheDir)
 		}
 
+		// 服务配置
 		server := getRunParams(cmd.Flags(), d.store)
 		setupLog(server.Log)
 
@@ -251,6 +257,7 @@ func getRunParams(flags *pflag.FlagSet, st *storage.Storage) *settings.Server {
 // if a flag is binded. Our alternative way is to manually check
 // the flag and then the value from env/config/gotten by viper.
 // https://github.com/spf13/viper/pull/331
+// 获取参数
 func getParamB(flags *pflag.FlagSet, key string) (string, bool) {
 	value, _ := flags.GetString(key)
 
@@ -268,11 +275,13 @@ func getParamB(flags *pflag.FlagSet, key string) (string, bool) {
 	return value, false
 }
 
+// 获取参数
 func getParam(flags *pflag.FlagSet, key string) string {
 	val, _ := getParamB(flags, key)
 	return val
 }
 
+// Log配置
 func setupLog(logMethod string) {
 	switch logMethod {
 	case "stdout":
@@ -363,6 +372,7 @@ func quickSetup(flags *pflag.FlagSet, d pythonData) {
 	checkErr(err)
 }
 
+// 初始化配置CMD CLI, 读取配置文件
 func initConfig() {
 	if cfgFile == "" {
 		home, err := homedir.Dir()

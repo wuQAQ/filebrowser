@@ -10,6 +10,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/users"
 )
 
+// 创建数据库
 // NewStorage creates a storage.Storage based on Bolt DB.
 func NewStorage(db *storm.DB) (*storage.Storage, error) {
 	userStore := users.NewStorage(usersBackend{db: db})

@@ -91,6 +91,7 @@ func withAdmin(fn handleFunc) handleFunc {
 	})
 }
 
+// 登陆后端处理
 var loginHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	auther, err := d.store.Auth.Get(d.settings.AuthMethod)
 	if err != nil {
@@ -112,6 +113,7 @@ type signupBody struct {
 	Password string `json:"password"`
 }
 
+// 注册处理
 var signupHandler = func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	if !d.settings.Signup {
 		return http.StatusMethodNotAllowed, nil

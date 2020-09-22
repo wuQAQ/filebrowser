@@ -14,10 +14,12 @@ type modifyRequest struct {
 	Which []string `json:"which"` // Answer to: which fields?
 }
 
+// 路由配置
 func NewHandler(imgSvc ImgService, fileCache FileCache, store *storage.Storage, server *settings.Server) (http.Handler, error) {
 	server.Clean()
 
 	r := mux.NewRouter()
+	// 配置前端静态页面
 	index, static := getStaticHandlers(store, server)
 
 	// NOTE: This fixes the issue where it would redirect if people did not put a
@@ -29,6 +31,7 @@ func NewHandler(imgSvc ImgService, fileCache FileCache, store *storage.Storage, 
 		return handle(fn, prefix, store, server)
 	}
 
+	// 配置后端
 	r.PathPrefix("/static").Handler(static)
 	r.NotFoundHandler = index
 
@@ -38,6 +41,7 @@ func NewHandler(imgSvc ImgService, fileCache FileCache, store *storage.Storage, 
 	api.Handle("/signup", monkey(signupHandler, ""))
 	api.Handle("/renew", monkey(renewHandler, ""))
 
+	// 用户配置
 	users := api.PathPrefix("/users").Subrouter()
 	users.Handle("", monkey(usersGetHandler, "")).Methods("GET")
 	users.Handle("", monkey(userPostHandler, "")).Methods("POST")

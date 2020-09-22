@@ -18,6 +18,7 @@ import (
 	"github.com/filebrowser/filebrowser/v2/version"
 )
 
+// 处理静态资源
 func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, box *rice.Box, file, contentType string) (int, error) {
 	w.Header().Set("Content-Type", contentType)
 
@@ -87,6 +88,7 @@ func handleWithStaticData(w http.ResponseWriter, _ *http.Request, d *data, box *
 	return 0, nil
 }
 
+// 前端路由配置
 func getStaticHandlers(store *storage.Storage, server *settings.Server) (index, static http.Handler) {
 	box := rice.MustFindBox("../frontend/dist")
 	handler := http.FileServer(box.HTTPBox())

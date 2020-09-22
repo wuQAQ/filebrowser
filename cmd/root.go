@@ -168,6 +168,7 @@ user created with the credentials from options "username" and "password".`,
 		signal.Notify(sigc, os.Interrupt, syscall.SIGTERM)
 		go cleanupHandler(listener, sigc)
 
+		// 配置http服务
 		handler, err := fbhttp.NewHandler(imgSvc, fileCache, d.store, server)
 		checkErr(err)
 

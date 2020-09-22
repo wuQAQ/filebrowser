@@ -62,6 +62,7 @@ func withSelfOrAdmin(fn handleFunc) handleFunc {
 	})
 }
 
+// 用户get处理
 var usersGetHandler = withAdmin(func(w http.ResponseWriter, r *http.Request, d *data) (int, error) {
 	users, err := d.store.Users.Gets(d.server.Root)
 	if err != nil {

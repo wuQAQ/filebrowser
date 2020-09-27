@@ -27,7 +27,7 @@ func New(workers int) *Service {
 	}
 }
 
-// Format is an image file format.
+// Format 图片格式
 /*
 ENUM(
 jpeg
@@ -56,7 +56,7 @@ func (x Format) toImaging() imaging.Format {
 	}
 }
 
-/*
+/* 图片质量
 ENUM(
 high
 medium
@@ -84,6 +84,7 @@ fit
 fill
 )
 */
+// 填充方式
 type ResizeMode int
 
 func (s *Service) FormatFromExtension(ext string) (Format, error) {
@@ -106,6 +107,7 @@ func (s *Service) FormatFromExtension(ext string) (Format, error) {
 	return -1, ErrUnsupportedFormat
 }
 
+// 转换配置
 type resizeConfig struct {
 	format     Format
 	resizeMode ResizeMode
@@ -132,6 +134,7 @@ func WithQuality(quality Quality) Option {
 	}
 }
 
+// 图片裁剪
 func (s *Service) Resize(ctx context.Context, in io.Reader, width, height int, out io.Writer, options ...Option) error {
 	if err := s.sem.Acquire(ctx, 1); err != nil {
 		return err
@@ -152,11 +155,13 @@ func (s *Service) Resize(ctx context.Context, in io.Reader, width, height int, o
 		option(&config)
 	}
 
+	// 图片解码
 	img, err := imaging.Decode(wrappedReader, imaging.AutoOrientation(true))
 	if err != nil {
 		return err
 	}
 
+	// 图片裁剪
 	switch config.resizeMode {
 	case ResizeModeFill:
 		img = imaging.Fill(img, width, height, imaging.Center, config.quality.resampleFilter())
@@ -164,18 +169,27 @@ func (s *Service) Resize(ctx context.Context, in io.Reader, width, height int, o
 		img = imaging.Fit(img, width, height, config.quality.resampleFilter())
 	}
 
+	// 图片编码
 	return imaging.Encode(out, img, config.format.toImaging())
 }
 
+/**
+ * 检测格式
+ * in: 输入流
+ */
 func (s *Service) detectFormat(in io.Reader) (Format, io.Reader, error) {
 	buf := &bytes.Buffer{}
+
+	// 分段读取
 	r := io.TeeReader(in, buf)
 
+	// 图片解码
 	_, imgFormat, err := image.DecodeConfig(r)
 	if err != nil {
 		return 0, nil, fmt.Errorf("%s: %w", err.Error(), ErrUnsupportedFormat)
 	}
 
+	// 转换为对应的枚举
 	format, err := ParseFormat(imgFormat)
 	if err != nil {
 		return 0, nil, ErrUnsupportedFormat

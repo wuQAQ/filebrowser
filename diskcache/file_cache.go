@@ -14,9 +14,11 @@ import (
 	"github.com/spf13/afero"
 )
 
+// 文件缓存
 type FileCache struct {
 	fs afero.Fs
 
+	// 粒度锁
 	// granular locks
 	scopedLocks struct {
 		sync.Mutex
@@ -31,16 +33,19 @@ func New(fs afero.Fs, root string) *FileCache {
 	}
 }
 
+// 存储
 func (f *FileCache) Store(ctx context.Context, key string, value []byte) error {
 	mu := f.getScopedLocks(key)
 	mu.Lock()
 	defer mu.Unlock()
 
+	// 创建文件
 	fileName := f.getFileName(key)
 	if err := f.fs.MkdirAll(filepath.Dir(fileName), 0700); err != nil {
 		return err
 	}
 
+	// 写入文件
 	if err := afero.WriteFile(f.fs, fileName, value, 0700); err != nil {
 		return err
 	}
@@ -48,6 +53,7 @@ func (f *FileCache) Store(ctx context.Context, key string, value []byte) error {
 	return nil
 }
 
+// 加载文件
 func (f *FileCache) Load(ctx context.Context, key string) (value []byte, exist bool, err error) {
 	r, ok, err := f.open(key)
 	if err != nil || !ok {
@@ -62,6 +68,7 @@ func (f *FileCache) Load(ctx context.Context, key string) (value []byte, exist b
 	return value, true, nil
 }
 
+// 删除文件
 func (f *FileCache) Delete(ctx context.Context, key string) error {
 	mu := f.getScopedLocks(key)
 	mu.Lock()
@@ -74,6 +81,7 @@ func (f *FileCache) Delete(ctx context.Context, key string) error {
 	return nil
 }
 
+// 打开文件
 func (f *FileCache) open(key string) (afero.File, bool, error) {
 	fileName := f.getFileName(key)
 	file, err := f.fs.Open(fileName)
@@ -102,6 +110,7 @@ func (f *FileCache) getScopedLocks(key string) (lock sync.Locker) {
 	return lock
 }
 
+// 获取文件名称
 func (f *FileCache) getFileName(key string) string {
 	hasher := sha1.New() //nolint:gosec
 	_, _ = hasher.Write([]byte(key))
